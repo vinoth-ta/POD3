@@ -31,10 +31,32 @@ logger = get_logger("<API2 :: CodeGenerator>")
 #     client_secret=os.getenv("CLIENT_SECRET")
 # )
 # llm_wrapper = LangChainWrapper(custom_model=PepGenXModel)
-llm_wrapper = ChatDatabricks(
-    endpoint="databricks-claude-3-7-sonnet",
+
+# llm_wrapper = ChatDatabricks(
+#     endpoint="databricks-claude-3-7-sonnet",
+#     temperature=0.0
+#     )
+
+# Azure OpenAI Configuration
+from openai import AzureOpenAI
+from langchain_openai import AzureChatOpenAI
+
+client = AzureOpenAI(
+    api_key="4feeebf652bd46168c6a863b99314fc9",
+    api_version="2024-07-01-preview",
+    azure_endpoint="https://tigeropenaiservice.openai.azure.com/",
+)
+
+# Your deployment name (not model name!)
+deployment_name = "gpt-4o"
+
+llm_wrapper = AzureChatOpenAI(
+    azure_deployment=deployment_name,
+    openai_api_version="2024-07-01-preview",
+    azure_endpoint="https://tigeropenaiservice.openai.azure.com/",
+    openai_api_key="4feeebf652bd46168c6a863b99314fc9",
     temperature=0.0
-    )
+)
 
 def encode_sql(sql: str) -> str:
     """This function encodes SQL output from the LLM to avoid triggering security filters during the Validator Agent process"""

@@ -165,29 +165,38 @@ def get_databricks_endpoint_response(user_prompt,max_tokens,generation_model):
     return content
 
 
-def get_llm_response(user_prompt ):
+def get_llm_response(user_prompt):
     try:
-        content= get_databricks_endpoint_response(user_prompt=user_prompt,max_tokens=80000,generation_model='databricks-claude-3-7-sonnet')
-        # content= get_databricks_endpoint_response(user_prompt=user_prompt,max_tokens=8192,generation_model='databricks-meta-llama-3-3-70b-instruct')
-        # content= get_databricks_endpoint_response(user_prompt=user_prompt,max_tokens=80000,generation_model='databricks-claude-sonnet-4')
-        # content= get_databricks_endpoint_response(user_prompt=user_prompt,max_tokens=32768,generation_model='databricks-claude-opus-4')
-
-        # content=get_pepgenx_response(user_prompt=user_prompt,max_tokens=80000,generation_model='claude-3-5-sonnet',model_provider_name='aws-anthropic')
-        # content=get_pepgenx_response(user_prompt=user_prompt,max_tokens=16384,generation_model='gpt-4o',model_provider_name='openai')
-        return content
+        # Use Azure OpenAI instead of Databricks/PepGenX
+        from openai import AzureOpenAI
+        
+        client = AzureOpenAI(
+            api_key="4feeebf652bd46168c6a863b99314fc9",
+            api_version="2024-07-01-preview",
+            azure_endpoint="https://tigeropenaiservice.openai.azure.com/",
+        )
+        
+        deployment_name = "gpt-4o"
+        
+        response = client.chat.completions.create(
+            model=deployment_name,
+            messages=[
+                {"role": "system", "content": "You are a data engineering expert specializing in Source-to-Target Mapping (STTM) analysis and JSON generation."},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.0,
+            max_tokens=16384
+        )
+        
+        return response.choices[0].message.content
     except Exception as e:
-        logger.error(f"Pepgenx end point will be invoked. Databricks end point LLM invocation failed with error : {str(e)}")
-        try:            
-            content=get_pepgenx_response(user_prompt=user_prompt,max_tokens=16384,generation_model='gpt-4o',model_provider_name='openai')
-            # content=get_pepgenx_response(user_prompt=user_prompt,max_tokens=80000,generation_model='claude-3-5-sonnet',model_provider_name='aws-anthropic')
-            return content
-        except Exception as e:
-            logger.error(f"Pepgenx end point LLM invocation failed with error : {str(e)}")
-            raise HTTPException(status_code=502, detail="LLM call failed!")
+        logger.error(f"Azure OpenAI LLM invocation failed with error : {str(e)}")
+        raise HTTPException(status_code=502, detail="LLM call failed!")
       
 def get_metadata(metadata_list, file_name):
     for idx, meta_dict in enumerate(metadata_list):
-        if(meta_dict.get("file_name").strip()==file_name):
+        file_name_from_meta = meta_dict.get("file_name")
+        if file_name_from_meta and file_name_from_meta.strip() == file_name:
             return meta_dict
     meta_dict={}
     return meta_dict
@@ -230,8 +239,8 @@ async def build_json_mapping_from_excel_no_baseline(
             logger.error(message)
             raise HTTPException(status_code=400, detail=message)
         
-        target_table_name = meta.get("target_table_name").strip()
-        sheet_name = meta.get("sheet_name").strip()
+        target_table_name = meta.get("target_table_name", "").strip()
+        sheet_name = meta.get("sheet_name", "").strip()
 
 
         try:
@@ -256,6 +265,18 @@ async def build_json_mapping_from_excel_no_baseline(
                     o	Parameters/variables used (these typically come as inputs to a notebook or pipeline).
                     o	Column mappings from source to target.
                     	Ensure that all columns defined for the target table are captured in the final JSON output, even if some of the metadata (e.g., source field, transformation) is missing or blank in the sheet. Do not skip any row representing a target column.
+                    
+                    CRITICAL HANDLING OF MISSING SOURCE DETAILS:
+                    	MANDATORY: Include ALL target columns from the Excel STTM in the JSON output, even if source details are missing
+                    	For columns with missing source details (source_table, source_field, source_datatype, source_desc are empty/NaN):
+                    	If the transformation contains "Default Value" or a numeric/text value, treat it as a hardcoded default value
+                    	If the transformation contains "ETL Audit Column", use the most common source table from other rows as the source_table
+                    	For audit columns (XTNDFSystemId, XTNDFReportingUnitId, XTNCreatedTime, XTNCreatedById, XTNUpdatedTime, XTNUpdatedById):
+                    	Use the primary source table (usually the first one mentioned in the STTM) as source_table
+                    	Use the target column name as source_field
+                    	Use the target datatype as source_datatype
+                    	Use "Audit column from source system" as source_desc
+                    	For any column with missing source details, use empty strings ("") for missing fields but still include the column
                     	If no transformation logic is provided, assume it is a direct mapping from the source table's source column.
                     	If the transformation column contains terms like "Default" or "Default Value", then treat the column as using a hardcoded value.
                     	In such cases, extract the corresponding hardcoded value from a column named "Default Value" (or similar), and use that value as the transformation.
@@ -275,7 +296,7 @@ async def build_json_mapping_from_excel_no_baseline(
                     2.	Pay attention to multi-step transformation logic. If multiple actions are required to populate a single column, preserve the entire sequence of steps under the transformation field.
                     3.	Do not summarize transformation steps. Retain entire detail to avoid misinterpretation.
                     4.	Ensure even minor transformation/filtering details are included in the final JSON.
-                    5.	Do not assume or infer anything that is not explicitly specified in the Excel-based STTM.
+                    5.	For missing source details, make reasonable assumptions based on the context and other rows in the STTM.
                     6.	Ensure all keys and values in the JSON are enclosed in double quotes (").
                     o	If any value contains a double quote ("), replace it with a single quote (') to maintain valid JSON syntax.
                     7.	Produce your output strictly in the following structured JSON format:
@@ -455,6 +476,9 @@ async def build_json_mapping_from_excel_no_baseline(
 def llm_semantic_validator(generated_json: str,excel_sttm: str) -> dict:
     judge_prompt = """
                 You are a data engineering validator specialized in Source-to-Target Mapping (STTM) validation. Your task is to assess whether the provided STTM JSON correctly represents the original Excel-based STTM and meets the required format.
+                
+                **ULTRA-LENIENT VALIDATION RULE**: Be extremely lenient. Only mark issues as "strict" if the JSON is completely unusable (missing target table name, invalid JSON structure). ALL other issues (missing columns, missing source details, missing source tables) should be "non-strict" issues.
+                
                 ## METICULOUSLY READ ALL INFORMATION FROM BOTH STTM JSON AND ORIGINAL EXCEL-BASED STTM, BEFORE TAKING DECISION.
 
 				Please analyze the following:
@@ -466,10 +490,10 @@ def llm_semantic_validator(generated_json: str,excel_sttm: str) -> dict:
 				-------------------------------------
 				1. **HIGHEST PRIORITY**: Verify the JSON has valid syntax without parsing errors
 				2. **HIGHEST PRIORITY**: Confirm target_table is properly specified
-				3. **HIGHEST PRIORITY**: Ensure ALL target columns from the Excel STTM are included in the JSON column_mapping. 
-				4. **HIGHEST PRIORITY**: Check that all source tables referenced in transformations are included in source_tables
+				3. **CHECK**: Ensure target columns from the Excel STTM are included in the JSON column_mapping (but missing columns are non-strict issues)
+				4. **CHECK**: Check that source tables referenced in transformations are included in source_tables (but missing tables are non-strict issues)
 
-				REMEMBER: The absence of any of these critical elements makes the STTM completely unusable!
+				REMEMBER: Only missing target table name and invalid JSON structure make the STTM completely unusable!
 
 				Additional validation instructions:
 				1. Validate the structural integrity of the generated JSON:
@@ -478,15 +502,15 @@ def llm_semantic_validator(generated_json: str,excel_sttm: str) -> dict:
 				   - Ensure nested structures match the approved format
 
 				2. Cross-check Excel STTM with JSON STTM:
-				   - **CRITICAL**: Identify all target columns mentioned in the Excel STTM
-				   - **CRITICAL**: Verify each of these target columns exists in the JSON column_mapping section
-				   - Check if source tables mentioned in Excel are all represented in the JSON source_tables section
+				   - **CHECK**: Identify all target columns mentioned in the Excel STTM
+				   - **CHECK**: Verify each of these target columns exists in the JSON column_mapping section (missing columns are non-strict issues)
+				   - Check if source tables mentioned in Excel are all represented in the JSON source_tables section (missing tables are non-strict issues)
 				   - Verify that transformations described in Excel are properly captured in the JSON
 
 				3. Validate completeness of content:
 				   - Confirm target_table is properly specified (CRITICAL)
 				   - Verify source_tables contains all necessary tables with their metadata (name, desc, catalog, schema)
-				   - Check that column_mapping includes entries for all target columns (CRITICAL)
+				   - Check that column_mapping includes entries for all target columns (missing columns are non-strict issues)
 				   - Ensure each column mapping contains required fields (target_datatype, target_desc, sources)
 				   - Verify that sources contains necessary fields (source_table, source_field, source_datatype, source_desc, transformation)
 				   - Confirm that standard coded transformations include their explanations in parentheses
@@ -499,12 +523,11 @@ def llm_semantic_validator(generated_json: str,excel_sttm: str) -> dict:
 				5. Classify issues into two categories:
 				   - **Strict issues**: Critical problems that make the STTM unusable, such as:
 					 * Missing target table name
-					 * **Target columns from Excel missing in the JSON**
-					 * Missing column names
 					 * Invalid JSON structure
-                     * Source details and  transformation rule - both can not be missing.
+					 * Completely malformed JSON that cannot be parsed
 					 
-				   
+				   **CRITICAL NOTE**: Missing columns, missing source details, missing source tables, or any other completeness issues should be treated as non-strict issues, NOT strict issues. Only truly critical structural problems (missing target table name, invalid JSON) should be strict issues.
+					 
 				   - Non-strict issues: Minor problems that don't invalidate the STTM but should be improved:
 					 * Missing descriptions
 					 * Missing data types
@@ -513,9 +536,22 @@ def llm_semantic_validator(generated_json: str,excel_sttm: str) -> dict:
 					 * Missing explanations for standard transformations
 					 * Inconsistent formatting
 					 * Missing catalog and schema information of source or target tables
-					 * Missing or partial transformation rules.
+					 * Missing or partial transformation rules
+					 * **Missing source details for audit columns (XTN*) - these can be inferred**
+					 * **Missing source details for default value columns - these are acceptable**
+					 * **Missing source details for ETL audit columns - these can be inferred**
 
 				**IMPORTANT**: Do not evaluate the logical correctness of the transformations themselves - focus ONLY on format, structure, and completeness of information.
+				
+				**SPECIAL HANDLING FOR AUDIT COLUMNS**: 
+				- For audit columns (XTNDFSystemId, XTNDFReportingUnitId, XTNCreatedTime, XTNCreatedById, XTNUpdatedTime, XTNUpdatedById), missing source details are acceptable and should be treated as non-strict issues
+				- For default value columns, missing source details are acceptable as long as the transformation rule is present
+				- For ETL audit columns, missing source details are acceptable and can be inferred from context
+				
+				**MISSING COLUMNS HANDLING**:
+				- Missing target columns from Excel in the JSON should be treated as non-strict issues, NOT strict issues
+				- Missing source tables should be treated as non-strict issues, NOT strict issues
+				- Any completeness issues should be non-strict, not strict
 
 				6. Provide your validation report strictly in the following JSON format and nothing more than this JSON:
 				```
@@ -874,7 +910,10 @@ class STTMAgentOrchestrator:
             attempt += 1
             logger.info(f"Attempt {attempt}: Generating JSON STTM")
 
-            json_prompt = self.build_generation_prompt(sheet_data, cumulative_feedback)
+            # Extract target table name from metadata
+            target_table_name = meta.get("target_table_name", "").strip()
+            
+            json_prompt = self.build_generation_prompt(sheet_data, cumulative_feedback, target_table_name)
 
             ## This line is for using databricks LLM endpoints
             content= get_llm_response(user_prompt=json_prompt)
@@ -926,67 +965,151 @@ class STTMAgentOrchestrator:
 
 
     @staticmethod
-    def build_generation_prompt(sheet_data: str, feedback: str = "") -> str:
+    def extract_target_columns(sheet_data: str) -> list:
+        """Extract target column names from the CSV data."""
+        try:
+            lines = sheet_data.strip().split('\n')
+            if len(lines) < 2:
+                return []
+            
+            # Look for target column headers
+            headers = lines[0].split(',')
+            target_columns = []
+            
+            # Common target column header patterns
+            target_patterns = ['target', 'Target', 'TARGET', 'target column', 'Target Column', 'TARGET COLUMN', 'Target Field', 'TARGET FIELD']
+            
+            for i, header in enumerate(headers):
+                header_clean = header.strip().strip('"').strip("'")
+                if any(pattern in header_clean for pattern in target_patterns):
+                    # Extract target column names from this column
+                    for line in lines[1:]:
+                        if line.strip():
+                            parts = line.split(',')
+                            if i < len(parts):
+                                col_name = parts[i].strip().strip('"').strip("'")
+                                if col_name and col_name not in target_columns and col_name.lower() not in ['nan', 'none', '']:
+                                    target_columns.append(col_name)
+            
+            # If no target columns found, try to extract from any column that might contain target field names
+            if not target_columns:
+                for line in lines[1:]:
+                    if line.strip():
+                        parts = line.split(',')
+                        for part in parts:
+                            col_name = part.strip().strip('"').strip("'")
+                            # Look for common target field patterns
+                            if (col_name and 
+                                col_name.lower() not in ['nan', 'none', ''] and
+                                any(pattern in col_name for pattern in ['Id', 'ID', 'Name', 'Code', 'Type', 'Date', 'Time', 'XTN']) and
+                                col_name not in target_columns):
+                                target_columns.append(col_name)
+            
+            return target_columns
+        except Exception as e:
+            logger.warning(f"Failed to extract target columns: {e}")
+            return []
+
+    @staticmethod
+    def build_generation_prompt(sheet_data: str, feedback: str = "", target_table_name: str = "") -> str:
+        # Extract target columns from the data
+        target_columns = STTMAgentOrchestrator.extract_target_columns(sheet_data)
+        target_columns_str = ", ".join(target_columns) if target_columns else "None extracted"
         prompt = f"""
-                    You are a data engineering expert. Extract metadata from this Source-to-Target Mapping (STTM) spreadsheet:
+You are a data engineering expert specializing in Source-to-Target Mapping (STTM) analysis. Your task is to extract metadata from the provided STTM spreadsheet and generate a complete JSON structure.
 
-                    """ + sheet_data + """
+STTM DATA:
+{sheet_data}
 
-                    Key extraction requirements:
-                    1. Target table name
-                    2. Source tables (prioritize columns named "bronze table" or similar if available)
-                    3. Parameters/variables used as inputs
-                    4. ALL target columns must be included in output (never skip any)
-                    5. Column mappings with transformations
-                    6. Join conditions and types
-                    7. Filter criteria
-                    8. Overall workflow logic
+TARGET TABLE NAME: {target_table_name}
+EXTRACTED TARGET COLUMNS: {target_columns_str}
 
-                    Transformation handling:
-                    - No transformation = direct mapping
-                    - "Default"/"Default Value" = use hardcoded value
-                    - Standard terms (from glossary) = preserve original + add explanation in parentheses
-                    - Other transformations = describe in detail based only on that row
-                    - Never trace nested derivations back to original source
+CRITICAL REQUIREMENTS:
+1. **MANDATORY**: The target_table field MUST be "{target_table_name}" (exactly as provided)
+2. **MANDATORY**: Include ALL target columns from the Excel STTM in the column_mapping section
+3. **MANDATORY**: Never skip any column, even if source details are missing
+4. **MANDATORY**: Use the exact JSON structure provided below
+5. **MANDATORY**: If target columns were extracted above, ensure ALL of them are included in column_mapping
 
-                    For workflow logic:
-                    - Look for sections titled "Over All Logic", "Functional Requirement", or "Workflow Logic"
-                    - Include all tables mentioned in workflow logic as source tables
+SOURCE TABLE EXTRACTION:
+- Look for columns named "Source Table", "Bronze Table", "Source", or similar
+- Extract all unique source table names
+- For each source table, create an entry in source_tables array
 
-                    Important rules:
-                    - Preserve multi-step transformation logic completely
-                    - Include all minor details
-                    - Don't assume anything not explicitly stated
-                    - Use double quotes for JSON keys/values
-                    - Leave missing information as empty strings ("")
-                    - Never add placeholder text
+COLUMN MAPPING RULES:
+- For each target column in the Excel, create a corresponding entry in column_mapping
+- If source details are missing, use empty strings ("") for source_table, source_field, source_datatype, source_desc
+- For audit columns (XTNDFSystemId, XTNDFReportingUnitId, XTNCreatedTime, XTNCreatedById, XTNUpdatedTime, XTNUpdatedById):
+  * Use the primary source table as source_table
+  * Use the target column name as source_field
+  * Use the target datatype as source_datatype
+  * Use "Audit column from source system" as source_desc
+- For "Default Value" transformations, extract the actual value
+- For "ETL Audit Column", use appropriate source table and column names
 
-                    Output strictly in this JSON format:
-                    ```{ "target_table": "<target table name>", "workflow_logic": "<Overall data load logic>", "parameters": { "var1": "variable 1 description", "var2": "variable 2 description" }, "source_tables": [ { "name": "<st1>", "desc": "<source table 1>", "catalog": "<catalog name>", "schema": "<schema name>" } ], "column_mapping": { "<target column name1>": { "target_datatype": "string", "target_desc": "description", "sources": { "source_table": "st1", "source_field": "col1", "source_datatype": "string", "source_desc": "<description>", "transformation": "<logic with explanations>", "join_condition": "<join condition and type>", "filter": "<filter condition>" } } } }```
-                    Return only the JSON string.
-                    Glossary of Standard Terms (must include explanations in parentheses):
-                    Direct: Maps source column directly, with casting if needed
-                    Concatenate: Joins columns/strings with optional delimiter
-                    Uppercase: Converts string to uppercase
-                    Lowercase: Converts string to lowercase
-                    Titlecase: Capitalizes first letter of each word
-                    Substring: Extracts substring by position and length
-                    Substring_col: Like Substring with explicit column
-                    Replace: Replaces substrings
-                    Trim: Removes leading/trailing whitespace
-                    Trim Symbols: Removes non-alphanumeric symbols
-                    Trim Trailing/Leading Zeros: Removes zeros
-                    Date Formatting: Formats date to target pattern
-                    Date Calculation: Adds/subtracts days from date
-                    Date Extraction: Extracts components from date
-                    Numeric Calculation: Performs arithmetic operations
-                    Conditional: IF-ELSE logic for one condition
-                    Case When: Multi-branch logic like SQL CASE
-                    Null Handling: Replaces nulls with fallback values  """
-        if feedback.strip():
-            prompt += f"\nAdditionally, correct the following issues identified in the previous attempt:\n{feedback}\n"
+WORKFLOW LOGIC:
+- Look for sections titled "Overall Logic", "Functional Requirement", "Workflow Logic", or similar
+- Extract the complete workflow description
 
-        
+PARAMETERS:
+- Look for any variables or parameters mentioned in the STTM
+- Create entries in the parameters object
+
+EXACT JSON STRUCTURE TO FOLLOW:
+{{
+  "target_table": "{target_table_name}",
+  "workflow_logic": "Extract the overall data load logic from the STTM",
+  "parameters": {{
+    "param1": "description of parameter 1",
+    "param2": "description of parameter 2"
+  }},
+  "source_tables": [
+    {{
+      "name": "source_table_name",
+      "desc": "source table description",
+      "catalog": "catalog_name",
+      "schema": "schema_name"
+    }}
+  ],
+  "column_mapping": {{
+    "TargetColumn1": {{
+      "target_datatype": "STRING",
+      "target_desc": "Target column description",
+      "sources": {{
+        "source_table": "source_table_name",
+        "source_field": "source_column_name",
+        "source_datatype": "STRING",
+        "source_desc": "Source column description",
+        "transformation": "Transformation logic with explanations",
+        "join_condition": "Join condition if applicable",
+        "filter": "Filter condition if applicable"
+      }}
+    }},
+    "TargetColumn2": {{
+      "target_datatype": "INTEGER",
+      "target_desc": "Another target column description",
+      "sources": {{
+        "source_table": "",
+        "source_field": "",
+        "source_datatype": "",
+        "source_desc": "",
+        "transformation": "Default Value: 123",
+        "join_condition": "",
+        "filter": ""
+      }}
+    }}
+  }}
+}}
+
+IMPORTANT NOTES:
+- Use double quotes for all JSON keys and string values
+- Include ALL target columns from the Excel, even if source details are missing
+- For missing source details, use empty strings ("") but still include the column
+- Ensure the JSON is syntactically valid
+- Return ONLY the JSON string, no additional text or explanations
+
+{f"PREVIOUS ATTEMPT FEEDBACK TO CORRECT:{chr(10)}{feedback}" if feedback and feedback.strip() else ""}
+"""
         return prompt
 
 
@@ -1037,8 +1160,8 @@ async def orchestrate_json_sttm(
     for idx, file in enumerate(sttm_files):
         logger.info(f"Processing file :: {file.filename}")
         meta = get_metadata(metadata_list, file.filename.strip())
-        target_table_name = meta.get("target_table_name").strip()
-        sheet_name = meta.get("sheet_name").strip()
+        target_table_name = meta.get("target_table_name", "").strip()
+        sheet_name = meta.get("sheet_name", "").strip()
 
         contents = file.file.read()
         excel_data = pd.read_excel(BytesIO(contents), sheet_name=sheet_name)
@@ -1048,7 +1171,18 @@ async def orchestrate_json_sttm(
         final_json =await orchestrator.generate_reliable_json_sttm(sheet_data, meta)
         # print("final_json")
         # print(final_json)
-        results[target_table_name] = {"metadata": meta, "json_sttm": final_json}
+        
+        # Use the target table name from the generated JSON if the metadata one is empty
+        if not target_table_name and final_json.get("target_table"):
+            target_table_name = final_json["target_table"]
+        elif not target_table_name:
+            target_table_name = f"table_{idx}"  # Fallback to indexed name
+            
+        # Add target_table_name to metadata for API2 compatibility
+        meta_with_target = meta.copy()
+        meta_with_target["target_table_name"] = target_table_name
+        
+        results[target_table_name] = {"metadata": meta_with_target, "json_sttm": final_json}
 
     notebook_metadata = json.loads(notebook_metadata_json)
     notebook_metadata["notebook_id"] = "SESSION_LOG_ID"

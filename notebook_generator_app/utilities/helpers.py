@@ -9,7 +9,7 @@ from notebook_generator_app.schemas.models import ServerError
 from sttm_to_notebook_generator_integrated.log_handler import get_logger
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Set up logging
 # logging.basicConfig(level=logging.INFO)
