@@ -1,0 +1,77 @@
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - preprod
+      - prod
+
+pool:
+  vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: templates
+      displayName: Templates from Devops Framework
+      type: git
+      name: Global_SnT_DMODevOps/az-aks-df-gitops
+      ref: dsi_main
+    - repository: VarTemplates
+      displayName: Project Specific Variable Templates
+      type: git
+      name: Global_Data_Project/silver-codegen-genai
+      ref: dev
+
+stages:
+  - template: cicd-templates/validate.yml@templates
+  - ${{ if eq(variables['Build.SourceBranchName'], 'dev') }}:
+      - template: cicd-templates/ci.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/dev/variables.yaml@VarTemplates
+          agent_pool: cdo_dsi_dev_self_hosted_agent(Linux)
+      - template: cicd-templates/cd.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/dev/variables.yaml@VarTemplates
+          environment: dev_dsi
+          agent_pool: cdo_dsi_dev_self_hosted_agent(Linux)
+
+  - ${{ if eq(variables['Build.SourceBranchName'], 'qa') }}:
+      - template: cicd-templates/ci.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/qa/variables.yaml@VarTemplates
+          agent_pool: cdo_dsi_qa_self_hosted_agent(Linux)
+      - template: cicd-templates/cd.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/qa/variables.yaml@VarTemplates
+          environment: qa
+          agent_pool: cdo_dsi_qa_self_hosted_agent(Linux)
+
+  - ${{ if eq(variables['Build.SourceBranchName'], 'preprod') }}:
+      - template: cicd-templates/ci.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/preprod/variables.yaml@VarTemplates
+          agent_pool: cdo_dsi_preprod_self_hosted_agent(Linux)
+      - template: cicd-templates/cd.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/preprod/variables.yaml@VarTemplates
+          environment: preprod
+          agent_pool: cdo_dsi_preprod_self_hosted_agent(Linux)
+
+  - ${{ if eq(variables['Build.SourceBranchName'], 'prod') }}:
+      - template: cicd-templates/ci.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/prod/variables.yaml@VarTemplates
+          agent_pool: cdo_dsi_prod_self_hosted_agent(Linux)
+      - template: cicd-templates/cd.yml@templates
+        parameters:
+          varPath: /devops/config/common/variables.yaml@VarTemplates
+          envVarPath: /devops/config/prod/variables.yaml@VarTemplates
+          environment: prod
+          agent_pool: cdo_dsi_prod_self_hosted_agent(Linux)

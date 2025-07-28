@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silver Layer CodeGen</title>
+  <!-- CodeMirror Code Editor-->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+
+   <!-- SheetJS-->
+   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <img src="/img/PepsiCo_logo.png" alt="Logo" style="height: 50px;">
+    <h1>Silver Layer CodeGen</h1>
+  </div>
+  <div class="container">
+    <div class="column" style="max-width: 50%;">
+      <!------->
+      <label>Layer Classification:</label>
+      <select id="layerClassSelect"></select><br><br>
+      <!------->
+      <label>Domain:</label>
+      <select id="domainSelect"></select><br><br>
+      <label>Product:</label>
+      <select id="productSelect"></select><br><br>
+      <!------->
+      <h2>Input Details</h2>
+      <input type="file" id="fileUploader" accept=".json,.xlsx" /><br/><br/>
+      <!------->
+      <label>Sheet Name:</label>
+      <select id="sheetSelect" style="display:none;"></select>
+      <!------->
+      <button id="submitSheetBtn" style="display: none;" disabled>Submit Sheet</button>
+      <h3>JSON Preview</h3>
+      <div class="editor-wrapper">
+        <textarea id="jsonEditor"></textarea>
+      </div>
+    </div>
+
+    <div class="column" style="max-width: 50%;"">
+      <h2>Generated Silver Notebook</h2>
+      <button onclick="generate()">Generate Notebook</button>
+      <div id="loader" style="display: none;"></div>
+      <div id="output"></div>
+      <div class="editor-wrapper">
+        <textarea id="codeEditor"></textarea>
+      </div>
+      <div id="downloadLink"></div>
+    </div>
+  </div>
+
+  <script src="/js/script.js?v=1"></script>
+</body>
+</html>

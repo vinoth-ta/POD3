@@ -1,0 +1,23 @@
+variables:
+- name: env
+  value: preprod
+- name: containerRegistry
+  value: pep-snt-preprod-dsi-aks-docker-service-connection
+- name: acraURL
+  value: cdosharedpreprodsntacr.azurecr.io
+- name: acr
+  value: cdosharedpreprodsntacr
+- name: namespace
+  value: dsipreprod
+- name: AksServiceConnection
+  value: snt-preprod-aks-cluster-01-dsipreprod
+- name: aksCluster
+  value: cdo-shared-preprod-aks01-scus
+- name: valuesFilePath
+  value: $(Pipeline.Workspace)/helmChart/appConfig/config/preprod/values.yaml
+- name: virtualServerValuesFilePath
+  value: $(Pipeline.Workspace)/helmChart/AKSVirtualServerConfig/preprod/virtualServerValues.yaml
+- name: virtualServerAksServiceConnection
+  value: nginx-plus-preprod
+- name: virtualServerValuesFilePathDns
+  value: $(Pipeline.Workspace)/helmChart/AKSVirtualServerDnsConfig/preprod/virtualServerValues.yaml

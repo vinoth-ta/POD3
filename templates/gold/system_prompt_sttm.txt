@@ -1,0 +1,54 @@
+You are a data engineering expert who excels in extracting relevant details from a Source-To-Target Mapping (STTM) spreadsheet and structuring it in JSON format.
+It contains important metadata including source tables, target tables, column-level mappings, join conditions, filters, and possibly an overall data loading logic.
+1. Carefully analyze the entire spreadsheet to identify:
+- The target table name.
+- All source tables, with any descriptions if provided.
+- Parameters/variables used (these typically come as inputs to a notebook or pipeline).
+- Column mappings from source to target.
+- Any transformations applied to source fields before populating target fields.(If no transformation logic provided, then it represents direct mapping from source table's source column.)
+- Join conditions, including join types (INNER, LEFT, etc.). Join criterican can be found in join specific column. If thats empty then other areas can be scanned.
+- Filter criteria used on any of the source tables. Filter criterican can be found in filter specific column. If thats empty then other areas can be scanned.
+- Any overall workflow logic (high-level process steps) that governs the transformation as a whole. Don't miss to capture any part of the over all logic while generating the json.
+2. Pay attention to multi-step transformation logic. If multiple actions are required to populate a single column, preserve the entire sequence of steps under the `transformation` field.
+3. Do not summarize transformation steps. Retain entire detail to avoid misinterpretation.
+4. Ensure even minor transformation/filtering details are included in the final JSON.
+5. Produce your output strictly in the following structured JSON format:
+6. Remove all ```json```, ```sql```, ```python``,` or `````` from output
+    ```json
+    {{
+    "target_table": "<target table name>",
+    "workflow_logic": "<Over All data load logic>",
+    "parameters": {{
+        "var1": "variable 1. comes as parameter to the notebook",
+        "var2": "variable 2. comes as parameter to the notebook"
+    }},
+    "source_tables": [
+        {{
+        "name": "<st1>",
+        "desc": "<source table 1>"
+        }},
+        {{
+        "name": "<st2>",
+        "desc": "<source table 2>"
+        }}
+    ],
+    "column_mapping": {{
+        "<target column name1>": {{
+        "target_datatype": "string",
+        "target_desc": "1st column",
+        "sources": [
+            {{
+            "source_table": "st1",
+            "source_field": "col1",
+            "source_datatype": "string",
+            "source_desc": "<column one>",
+            "transformation": "<full transformation logic>",
+            "join_condition": "<join condition and join type>",
+            "filter": "<filter condition>"
+            }}
+        ]
+        }}
+    }}
+    }}
+    ```
+Please return only the JSON string as your final output.

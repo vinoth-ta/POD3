@@ -1,0 +1,23 @@
+variables:
+- name: env
+  value: qa
+- name: containerRegistry
+  value: pep-snt-qa-dsi-aks-docker-service-connection
+- name: acraURL
+  value: cdosharedqasntacr.azurecr.io
+- name: acr
+  value: cdosharedqasntacr
+- name: namespace
+  value: dsiqa
+- name: AksServiceConnection
+  value: snt-qa-aks-cluster-01-dsiqa
+- name: aksCluster
+  value: cdo-shared-qa-aks01-eus
+- name: valuesFilePath
+  value: $(Pipeline.Workspace)/helmChart/appConfig/config/qa/values.yaml
+- name: virtualServerValuesFilePath
+  value: $(Pipeline.Workspace)/helmChart/AKSVirtualServerConfig/qa/virtualServerValues.yaml
+- name: virtualServerAksServiceConnection
+  value: nginx-plus-qa
+- name: virtualServerValuesFilePathDns
+  value: $(Pipeline.Workspace)/helmChart/AKSVirtualServerDnsConfig/qa/virtualServerValues.yaml

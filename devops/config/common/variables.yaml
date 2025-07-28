@@ -1,0 +1,23 @@
+variables:
+- name: acrRepo
+  value: 'silver-codegen-genai'
+- name: tags
+  value: $(Build.BuildNumber) 
+- name: chartArtifactPath
+  value: $(Pipeline.Workspace)/helmChart/$(chartName)-$(chartVersion).tgz
+- name: chartName
+  value: silver-codegen-genai
+- name: chartVersion
+  value: 1.0
+- name: virtualServerChartPath
+  value: $(System.DefaultWorkingDirectory)/az-aks-df-gitops/helmCharts/virtualServer
+- name: virtualServerChartArtifactPath
+  value: $(Pipeline.Workspace)/helmChart/$(virtualServerChartName)-$(virtualServerChartVersion).tgz
+- name: virtualServerChartName
+  value: virtualserver
+- name: virtualServerChartVersion
+  value: 1.0
+- name: virtualServerNamespace
+  value: nginx-plus
+- name: enableVirtualServer
+  value: true

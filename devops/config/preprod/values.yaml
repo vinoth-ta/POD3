@@ -1,0 +1,46 @@
+env: preprod
+appName: silver-codegen-genai-dep
+replicaCount: 1
+autoScaling: 
+  enabled: true
+restartPolicy: OnFailure
+image:
+  repository: cdosharedpreprodsntacr.azurecr.io/silver-codegen-genai
+  tag: #{tags}#
+  pullPolicy: Always
+namespace: dsipreprod
+configmapName: silver-codegen-genai-config-preprod
+secretRefName: silver-codegen-genai-secret-preprod
+imagepullsecret: cdosharedsntacr-secret
+service: 
+  name: silver-codegen-genai-svc
+  targetPort: 8000
+  port: 80
+  type: ClusterIP
+  protocol: TCP
+  annotations: 
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+enableLivenessProbe: true
+resources:
+  request:
+    memory: "2Gi"
+    cpu: "125m"
+  limit:
+    memory: "4Gi"
+    cpu: "2000m"
+configMapData:
+  rootContext: 'silver-codegen-genai'
+# livenessProbe:
+#   httpGet:
+#     path: /silver-codegen-genai/healthCheck
+#     port: 8080
+#   initialDelaySeconds: 150
+#   failureThreshold: 5
+#   periodSeconds: 150
+#   timeoutSeconds: 10
+serverRouteName: silver-codegen-genai-vr
+subroutesPath: '/silver-codegen-genai'
+host: "cdo-shared-preprod-aks01-scus.nonprod.azure.intra.pepsico.com"
+virtualServerRoute:
+  enabled: true
+

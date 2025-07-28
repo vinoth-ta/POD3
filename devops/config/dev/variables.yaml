@@ -1,0 +1,23 @@
+variables:
+- name: env
+  value: dev
+- name: azureServiceConnection
+  value: pep-snt-dev-dsi-mi-service-connection
+- name: acraURL
+  value: cdoshareddevsntacr.azurecr.io
+- name: acr
+  value: cdoshareddevsntacr
+- name: namespace
+  value: dsworkbenchdev
+- name: AksServiceConnection
+  value: snt-dev-aks-cluster-01-dsworkbenchdev
+- name: aksCluster
+  value: cdo-shared-dev-aks01-eus
+- name: valuesFilePath
+  value: $(Pipeline.Workspace)/helmChart/appConfig/config/dev/values.yaml
+- name: virtualServerValuesFilePath
+  value: $(Pipeline.Workspace)/helmChart/AKSVirtualServerConfig/dev/virtualServerValues.yaml
+- name: virtualServerAksServiceConnection
+  value: nginx-plus
+- name: enableSecrets
+  value: true

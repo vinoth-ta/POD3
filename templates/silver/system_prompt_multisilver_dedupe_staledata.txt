@@ -1,0 +1,67 @@
+You must not modify any part of the notebook except the section between the below markers:
+# START_SPARK_SQL_TRANSFORMATIONS
+transform_sql_query_dict = {{
+	<target_table_nm>: {{
+		"sql": """
+			SELECT bronze.* FROM (<sqlTransformation>
+            FROM bronze_data WHERE ROWNUM = 1) bronze
+            LEFT JOIN (SELECT * FROM {{target_db_name}}.{{target_table_nm}} WHERE XTNDFSystemId = {{bronzeSystemId}} and XTNDFReportingUnitId = {{bronzeReportingId}}) silver 
+		    ON bronze.<target_join_column> = silver.<target_join_column>
+            AND bronze.<target_join_column> = silver.<target_join_column>
+		    WHERE bronze.<target_audit_column> > COALESCE(silver.<target_audit_column>, '1970-01-01 00:00:00')
+			""".format(target_db_name=target_db_nm,**widgetParams),
+		"merge_key": """<merge_key>""",
+		"partition_columns": """<partition_cols>""",
+		"merge_type": """<merge_type>""",
+		"format_type": """delta""",
+		"output_directory_name": f"silver/database/<target_table_nm>"
+	}},
+	<target_table_nm>: {{
+		"sql": """<SqlTransformation>
+			<fromClause>
+			""".format(target_db_name=target_db_nm,**widgetParams),
+		"merge_key": """<merge_key>""",
+		"partition_columns": """<partition_cols>""",
+		"merge_type": """<merge_type>""",
+		"format_type": """delta""",
+		"output_directory_name": f"silver/database/<target_table_nm>
+	}}
+}}
+# END_SPARK_SQL_TRANSFORMATIONS
+
+### Requirements:
+Remove all ```json```, ```sql```, ```python``,` or `````` from output
+This is a multisilver workflow where one bronze table can go to multiple target silver tables
+Each individual logical piece will be found nested under the top level key of the STTM['target_table_nm']
+Replace transform_sql_query_dict[<target_table_nm>] key with its origin value from the STTM
+Define SQL SELECT statement inside the `sql` key of transform_sql_query_dict['target_table_nm']
+If source_datatype is different from target_datatype than cast the value to it's target_datatype
+Do not rename columns unless source and target column are different from the STTM
+For each target_table the FROM and JOIN statement may change based on the value of STTM['target_table']['metadata']['source_deduplication'] and STTM['target_table']['metadata']['stale_data_handling']
+For each target_table if source_deduplication = 'Y' and stale_data_handling = 'Y' than construct the query based off the first item in transform_sql_query_dict
+- Replace <target_join_column> with the values from STTM['target_table']['metadata']['target_join_columns'] and not from 'merge_key'
+- Replace <target_audit_column> with the values from STTM['target_table']['metadata']['target_audit_columns']
+For each target_table if source_deduplication = 'N' than replace <fromClause> with
+	FROM {{BronzeDBName}}.{{BronzeTblName}}
+	QUALIFY ROW_NUMBER()
+	OVER (PARTITION BY <merge_key>
+	ORDER BY CAST(ZTIMESTAMP AS BIGINT) DESC) = 1
+The following Audit columns must be selected directly from the source table:
+- XTNDFSystemId
+- XTNDFReportingUnitId
+- XTNCreatedTime
+- XTNCreatedById
+- XTNUpdatedTime
+- XTNUpdatedById
+The .format(target_db_name=target_db_name,**widgetParams) is fixed logic and should never be changed
+Replace <merge_key> with the values from STTM['target_table']['metadata']['merge_key']
+Replace <partition_cols> with the values from STTM['target_table']['metadata']['partition_columns']
+Replace <merge_type> with the values from STTM['target_table']['metadata']['merge_type']
+Edit output_directory_name value from `sql` key of transform_sql_query_dict['target_table_nm'] with <target_table_nm> from its origin value from the STTM
+
+
+### Output:
+Only the SQL code between the below markers, nothing else:
+Return the result strictly as transform_sql_query_dict = JSON, do not include any explanation, markdown, or code fencing.
+# START_SPARK_SQL_TRANSFORMATIONS
+# END_SPARK_SQL_TRANSFORMATIONS
