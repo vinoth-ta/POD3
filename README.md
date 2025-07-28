@@ -1,8 +1,8 @@
 # STTM-to-Notebook Generator
 
-A production-ready system that converts Source-to-Target Mapping (STTM) Excel files into complete Databricks ETL notebooks using Azure OpenAI.
+system that converts Source-to-Target Mapping (STTM) Excel files into complete Databricks ETL notebooks using Azure OpenAI.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
