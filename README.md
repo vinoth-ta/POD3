@@ -43,7 +43,7 @@ uvicorn sttm_to_notebook_generator_integrated.api3_sttm_to_notebook_generator:ap
 
 The API will be available at: `http://localhost:8000`
 
-## 📋 API Usage
+## API Usage
 
 ### Endpoint: `/from-sttm-generate-notebook`
 
@@ -75,7 +75,7 @@ curl -X POST "http://localhost:8000/from-sttm-generate-notebook" \
 }
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ### Components:
 1. **API1 (JSON Converter)**: Converts STTM Excel → Structured JSON
@@ -85,17 +85,17 @@ curl -X POST "http://localhost:8000/from-sttm-generate-notebook" \
 3. **API3 (Orchestrator)**: Coordinates the entire process using optimized components
 
 ### Key Features:
-- ✅ Azure OpenAI Integration
-- ✅ Enhanced Performance with Optimized Processing
-- ✅ Smart Validation & Error Recovery
-- ✅ Semantic Validation
-- ✅ Error Handling & Logging
-- ✅ Template-based Code Generation
-- ✅ Audit Framework Integration
-- ✅ Data Quality Rules Support
-- ✅ Multi-attempt JSON Generation with Feedback Loop
+- Azure OpenAI Integration
+- Enhanced Performance with Optimized Processing
+- Smart Validation & Error Recovery
+- Semantic Validation
+- Error Handling & Logging
+- Template-based Code Generation
+- Audit Framework Integration
+- Data Quality Rules Support
+- Multi-attempt JSON Generation with Feedback Loop
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 POD3/
@@ -115,7 +115,7 @@ POD3/
 └── README.md                       # This file
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Azure OpenAI Setup
 The system is configured to use Azure OpenAI with the following settings:
@@ -128,7 +128,7 @@ The system is configured to use Azure OpenAI with the following settings:
 - Supports both Silver and Gold layer transformations
 - Project-specific templates can be added for customization
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues:
 
@@ -153,20 +153,20 @@ The system is configured to use Azure OpenAI with the following settings:
 ## 📝 Version History
 
 ### v1.1.0 (Current)
-- ✅ Optimized STTM processor with enhanced performance
-- ✅ Smart validation and error recovery mechanisms
-- ✅ Multi-attempt JSON generation with feedback loop
-- ✅ Improved Azure OpenAI integration
-- ✅ Enhanced error handling and logging
+- Optimized STTM processor with enhanced performance
+- Smart validation and error recovery mechanisms
+- Multi-attempt JSON generation with feedback loop
+- Improved Azure OpenAI integration
+- Enhanced error handling and logging
 
 ### v1.0.0
-- ✅ Complete STTM-to-Notebook pipeline
-- ✅ Azure OpenAI integration
-- ✅ Semantic validation
-- ✅ Error handling
-- ✅ Template system
+- Complete STTM-to-Notebook pipeline
+- Azure OpenAI integration
+- Semantic validation
+- Error handling
+- Template system
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -174,12 +174,12 @@ The system is configured to use Azure OpenAI with the following settings:
 4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+## License
 
 [Your License Here]
 
-## 🆘 Support
+## Support
 
 For issues and questions:
 - Create an issue in the repository
-- Contact: [your-email@domain.com]
+- Contact: vinoth.premkumar@tigeranalytics.com
