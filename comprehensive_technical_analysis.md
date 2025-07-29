@@ -28,7 +28,7 @@ This document provides a detailed technical analysis comparing the original (v1.
 - **Input Token Reduction**: 15% through optimized prompt engineering
 - **Output Token Reduction**: 12% through better response formatting
 - **Overall Efficiency**: 43-66% reduction in total token consumption
-- **Cost Savings**: Significant reduction in Azure OpenAI API costs
+- **Cost Savings**: Significant reduction in LLM API costs
 
 ---
 
