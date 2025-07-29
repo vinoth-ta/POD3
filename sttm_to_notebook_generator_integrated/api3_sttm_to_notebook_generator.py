@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+"""
+Parallel Server Runner for STTM to Notebook Generator API
+Runs both V1.0.0 and V1.1.0 versions simultaneously on different ports.
+"""
+
+import subprocess
+import time
+import signal
+import sys
+import os
+import threading
+from pathlib import Path
+
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 from typing import List
 import json
@@ -24,9 +38,9 @@ logger = get_logger("<API3 :: Encapsulator>")
 
 # Initialize the main FastAPI application
 app = FastAPI(
-    title="Combined API for STTM to Notebook Generation",
-    description="Orchestrates the conversion of STTM Excel to JSON and then generates an ETL notebook.",
-    version="1.0.0"
+    title="STTM to Notebook Generation API - V1.1.0",
+    description="Optimized version of the STTM to Notebook Generation API with smart validation.",
+    version="1.1.0"
 )
 
 # Include the routers from your individual API files
@@ -58,7 +72,7 @@ async def full_process_generate_notebook(
     3. Calls the `generate-silver-notebook` endpoint.
     4. Returns the final response from the notebook generation step.
     """
-    client_ip =await get_client_ip(request)
+    client_ip = await get_client_ip(request)
     logger.info(f"Request received from IP: {client_ip}")
     try:
         # Step 1: Call the logic of api1_json_converter_optimized
@@ -69,7 +83,7 @@ async def full_process_generate_notebook(
         from .api1_json_converter_optimized import orchestrate_json_sttm as process_sttm_to_json  # NEW OPTIMIZED VERSION
 
         # Await the execution of the first API's logic (optimized version)
-        json_conversion_output =await process_sttm_to_json(
+        json_conversion_output = await process_sttm_to_json(
             sttm_metadata_json=sttm_metadata_json,
             sttm_files=sttm_files,
             notebook_metadata_json=notebook_metadata_json # Pass this through, as api1 now modifies it
@@ -112,29 +126,32 @@ async def full_process_generate_notebook(
         )
 
         # Step 3: Call the logic of api2_notebook_generator
-        # We need to directly call the async function from api2_notebook_generator.py
+        # We need to directly call the async function from notebook_generator_app/main.py
         # and pass the arguments it expects.
         # We import the `generate_response` function directly.
-        
-        from notebook_generator_app.main import generate_response as generate_notebook
+        from notebook_generator_app.main import generate_response
 
-        final_response =await generate_notebook(request=prompt_request)
+        # Await the execution of the second API's logic
+        notebook_response = await generate_response(prompt_request)
+        #print(type(notebook_response))
+        logger.debug(notebook_response)
+        #print(notebook_response.keys())
         
         logger.info("Notebook generation completed successfully!")
-        return final_response
-
-    except HTTPException as e:
-        message = str(e)
-        logger.error(message)
-        # Re-raise HTTPExceptions as they are already formatted for FastAPI
-        raise e
+        return notebook_response
+        
     except Exception as e:
-        message = f"An internal server error occurred: {str(e)}"
-        logger.error(message)
-        # Catch any other unexpected errors
-        raise HTTPException(status_code=500, detail=message)
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Optional: Add a root endpoint for basic health check
 @app.get(f"/{appName}")
 async def read_root():
-    return {"message": f"Welcome to the Combined STTM to Notebook Generation API!\nPlease use the path: /{appName}/api/v1/edf/genai/codegenservices/from-sttm-generate-notebook"}
+    return {"message": "STTM to Notebook Generation API - V1.1.0", "version": "1.1.0"}
+
+@app.get(f"/{appName}/v1.1")
+async def read_root():
+    return {"message": "STTM to Notebook Generation API - V1.1.0", "version": "1.1.0"}
+
+@app.get(f"/{appName}/v1.1/health")
+async def health_check():
+    return {"status": "healthy", "version": "1.1.0"}

@@ -1,63 +1,49 @@
 # STTM-to-Notebook Generator: Project Structure
 
 ## Overview
-This document outlines the organized structure of the STTM-to-Notebook Generator project, providing a clear understanding of where different components are located and their purposes.
+This project implements an AI-powered system that converts Source-to-Target Mapping (STTM) Excel files into executable Databricks notebooks. The system uses advanced LLM integration and multi-agent orchestration to generate high-quality ETL code.
 
-## Root Directory Structure
+## Directory Structure
 
 ```
 POD3/
-├── README.md                           # Main project documentation
-├── requirements.txt                    # Python dependencies
-├── .gitignore                         # Git ignore rules
-├── .dockerignore                      # Docker ignore rules
-├── Dockerfile                         # Docker container configuration
-├── docker-compose.yml                 # Docker Compose configuration
-├── PROJECT_STRUCTURE.md               # This file - project structure guide
-│
-├── docs/                              # Documentation directory
-│   ├── architecture/                  # System architecture diagrams
-│   │   ├── v1.0.0_architecture_diagrams.md
-│   │   └── v1.1.0_architecture_diagrams.md
-│   ├── analysis/                      # Technical analysis documents
-│   │   ├── comprehensive_technical_analysis.md
-│   │   ├── version_comparison_analysis.md
-│   │   └── token_analysis_report.md
-│   └── deployment/                    # Deployment documentation
-│       └── DEPLOYMENT.md
-│
-├── sttm_to_notebook_generator_integrated/  # Main application code
+├── sttm_to_notebook_generator_integrated/    # Main API integration module
 │   ├── __init__.py
-│   ├── api1_json_converter.py             # Original STTM to JSON converter
-│   ├── api1_json_converter_optimized.py   # Optimized STTM to JSON converter
-│   ├── api3_sttm_to_notebook_generator.py # Main orchestrator
-│   ├── log_handler.py                     # Logging utilities
-│   ├── log_session_id.py                  # Session management
-│   └── read_env_var.py                    # Environment variable handling
+│   ├── api1_json_converter.py               # V1.0.0: Original JSON converter
+│   ├── api1_json_converter_optimized.py     # V1.1.0: Optimized JSON converter
+│   ├── api3_sttm_to_notebook_generator.py   # V1.1.0: Main FastAPI app
+│   ├── log_handler.py                       # Logging utilities
+│   ├── log_session_id.py                    # Session management
+│   └── read_env_var.py                      # Environment configuration
 │
-├── notebook_generator_app/            # Notebook generation application
+├── notebook_generator_app/                   # Notebook generation module
 │   ├── __init__.py
-│   ├── main.py                         # FastAPI application for notebook generation
-│   ├── llm/                            # LLM integration layer
+│   ├── main.py                              # Notebook generation API
+│   ├── schemas/
 │   │   ├── __init__.py
-│   │   ├── langchain_workflow.py       # LangChain workflow integration
-│   │   ├── langchain_wrapper.py        # LangChain wrapper utilities
-│   │   └── pepgenx_llm.py              # PepGenX LLM integration
-│   ├── schemas/                        # Data schemas and models
+│   │   └── models.py                        # Pydantic models
+│   ├── utilities/
 │   │   ├── __init__.py
-│   │   └── models.py                   # Pydantic models
-│   └── utilities/                      # Utility functions
+│   │   └── helpers.py                       # Utility functions
+│   └── llm/
 │       ├── __init__.py
-│       └── helpers.py                  # Helper functions
+│       ├── langchain_workflow.py            # LangChain integration
+│       ├── langchain_wrapper.py             # LLM wrapper
+│       └── pepgenx_llm.py                   # PepGenX LLM integration
 │
-├── templates/                          # Jinja2 templates for notebook generation
-│   ├── gold/                           # Gold layer templates
+├── templates/                                # Jinja2 templates
+│   ├── gold/
 │   │   ├── gold_notebook_template.j2
 │   │   ├── instructions_langchain.txt
 │   │   ├── system_prompt_sttm.txt
 │   │   ├── system_prompt_validator.txt
 │   │   └── system_prompt.txt
-│   └── silver/                         # Silver layer templates
+│   └── silver/
+│       ├── corporate_social_responsibility/
+│       │   └── emissions_tracking/
+│       │       ├── instructions_langchain.txt
+│       │       ├── silver_notebook_template.j2
+│       │       └── system_prompt.txt
 │       ├── instructions_langchain.txt
 │       ├── silver_notebook_template.j2
 │       ├── system_prompt_dedupe_staledata.txt
@@ -65,14 +51,9 @@ POD3/
 │       ├── system_prompt_multisilver_dedupe_staledata.txt
 │       ├── system_prompt_multisilver_dedupe.txt
 │       ├── system_prompt_multisilver.txt
-│       ├── system_prompt.txt
-│       └── corporate_social_responsibility/
-│           └── emissions_tracking/
-│               ├── instructions_langchain.txt
-│               ├── silver_notebook_template.j2
-│               └── system_prompt.txt
+│       └── system_prompt.txt
 │
-├── static/                             # Static web assets
+├── static/                                   # Static web assets
 │   ├── css/
 │   │   └── styles.css
 │   ├── img/
@@ -82,131 +63,173 @@ POD3/
 │   │   └── script_og.js
 │   └── index.html
 │
-├── tests/                              # Testing directory
-│   ├── automated/                      # Automated test scripts
-│   │   └── test_comparison.py          # Automated version comparison tests
-│   ├── manual/                         # Manual test scripts
-│   │   └── manual_test_comparison.py   # Manual version comparison tests
-│   └── results/                        # Test results and outputs
-│       ├── test_results_v1.0.0_20250728_205813.json
-│       └── test_results_v1.1.0_20250728_205835.json
+├── tests/                                    # Testing directory
+│   ├── automated/                            # Automated test scripts
+│   │   └── test_comparison.py                # Automated version comparison tests
+│   ├── manual/                               # Manual test scripts
+│   │   └── manual_test_comparison.py         # Manual version comparison tests
+│   └── results/                              # Test results and outputs
+│       ├── version_comparison_report_*.md    # Generated comparison reports
+│       ├── version_stats_*.json              # Detailed statistics
+│       ├── test_results_v1.0.0_*.json       # V1.0.0 test results
+│       └── test_results_v1.1.0_*.json       # V1.1.0 test results
 │
-├── data/                               # Data directory
-│   ├── sample_sttm/                    # Sample STTM files for testing
+├── data/                                     # Data directory
+│   ├── sample_sttm/                          # Sample STTM files for testing
 │   │   ├── Corporate_Social_Responsibility_XTNElectricityBasedEmission.xlsx
 │   │   ├── Corporate_Social_Responsibility_XTNElectricityBasedEmission_multi_source_same_column.xlsx
 │   │   ├── Corporate_Social_Responsibility_XTNElectricityBasedEmission_multi_source_same_column_modified.xlsx
 │   │   └── Corporate_Social_Responsibility_XTNFuelBasedEmission.xlsx
-│   └── responses/                      # API response data
-│       ├── v1.0.0_response.json
-│       └── v1.1.0_response.json
+│   └── responses/                            # API response data
+│       ├── v1.0.0_response.json             # V1.0.0 response samples
+│       └── v1.1.0_response.json             # V1.1.0 response samples
 │
-├── scripts/                            # Utility scripts
-│   ├── analysis/                       # Analysis scripts
-│   │   └── token_analysis.py           # Token usage analysis script
-│   └── setup/                          # Setup and deployment scripts
-│       └── setup.sh                    # Local environment setup script
+├── scripts/                                  # Utility scripts
+│   ├── analysis/                             # Analysis scripts
+│   │   ├── token_analysis.py                 # Token usage analysis script
+│   │   ├── extract_version_stats.py          # Version statistics extractor
+│   │   └── view_existing_stats.py            # Existing stats viewer
+│   ├── setup/                                # Setup and deployment scripts
+│   │   └── setup.sh                          # Local environment setup script
+│   └── run_parallel.py                       # Parallel server runner
 │
-├── devops/                             # DevOps and CI/CD configuration
-│   └── config/                         # Configuration files
-│       ├── cicd_pipeline.yaml          # CI/CD pipeline configuration
-│       ├── common/                     # Common configuration
+├── docs/                                     # Documentation
+│   ├── analysis/                             # Analysis documentation
+│   │   ├── comprehensive_technical_analysis.md
+│   │   ├── token_analysis_report.md
+│   │   └── version_comparison_analysis.md
+│   ├── architecture/                         # Architecture documentation
+│   │   ├── v1.0.0_architecture_diagrams.md
+│   │   └── v1.1.0_architecture_diagrams.md
+│   └── deployment/                           # Deployment documentation
+│       └── DEPLOYMENT.md
+│
+├── devops/                                   # DevOps and CI/CD configuration
+│   └── config/
+│       ├── cicd_pipeline.yaml
+│       ├── common/
 │       │   └── variables.yaml
-│       ├── dev/                        # Development environment config
+│       ├── dev/
 │       │   ├── values.yaml
 │       │   └── variables.yaml
-│       ├── preprod/                    # Pre-production environment config
+│       ├── preprod/
 │       │   ├── values.yaml
 │       │   └── variables.yaml
-│       ├── prod/                       # Production environment config
+│       ├── prod/
 │       │   ├── values.yaml
 │       │   └── variables.yaml
-│       └── qa/                         # QA environment config
-│           ├── values.yaml
-│           └── variables.yaml
+│       ├── qa/
+│       │   ├── values.yaml
+│       │   └── variables.yaml
+│       └── variables.yaml
 │
-├── logs/                               # Application logs directory
-├── venv/                               # Python virtual environment (gitignored)
-└── .DS_Store                           # macOS system file (gitignored)
+├── logs/                                     # Application logs
+│   └── .gitkeep                              # Keep directory in git
+│
+├── venv/                                     # Python virtual environment
+├── .git/                                     # Git repository
+├── .gitignore                                # Git ignore rules
+├── .dockerignore                             # Docker ignore rules
+├── README.md                                 # Project overview
+├── PROJECT_STRUCTURE.md                      # This file
+├── requirements.txt                          # Python dependencies
+├── Dockerfile                                # Docker configuration
+└── docker-compose.yml                        # Docker Compose configuration
 ```
 
-## Directory Purposes
+## Key Components
 
-### `/docs/`
-Contains all project documentation organized by category:
-- **architecture/**: Mermaid diagrams and system architecture documentation
-- **analysis/**: Technical analysis, comparison reports, and performance metrics
-- **deployment/**: Deployment guides and configuration documentation
+### API Modules
+- **V1.0.0**: `api1_json_converter.py` - Original implementation
+- **V1.1.0**: `api1_json_converter_optimized.py` - Optimized implementation
+- **Main App**: `api3_sttm_to_notebook_generator.py` - FastAPI orchestrator
 
-### `/sttm_to_notebook_generator_integrated/`
-Core application code containing:
-- **API1**: STTM to JSON conversion (original and optimized versions)
-- **API3**: Main orchestrator that coordinates the entire process
-- **Utilities**: Logging, session management, and environment handling
+### Testing Framework
+- **Automated Tests**: `tests/automated/test_comparison.py`
+- **Manual Tests**: `tests/manual/manual_test_comparison.py`
+- **Statistics**: `scripts/analysis/extract_version_stats.py`
+- **Parallel Testing**: `scripts/run_parallel.py`
 
-### `/notebook_generator_app/`
-Notebook generation application with:
-- **LLM Integration**: LangChain workflows and LLM wrappers
-- **Schemas**: Data models and validation
-- **Utilities**: Helper functions and common utilities
+### Analysis Tools
+- **Token Analysis**: `scripts/analysis/token_analysis.py`
+- **Version Stats**: `scripts/analysis/extract_version_stats.py`
+- **Stats Viewer**: `scripts/analysis/view_existing_stats.py`
 
-### `/templates/`
-Jinja2 templates for generating Databricks notebooks:
-- **Gold Layer**: Templates for gold layer transformations
-- **Silver Layer**: Templates for silver layer transformations
-- **Project-specific**: Custom templates for specific domains
+## Version Management
 
-### `/tests/`
-Testing infrastructure:
-- **Automated**: Scripts for automated testing and comparison
-- **Manual**: Manual testing procedures and scripts
-- **Results**: Test outputs and comparison data
+### V1.0.0 (Original)
+- Uses `api1_json_converter.py`
+- Basic validation and error handling
+- Standard processing pipeline
 
-### `/data/`
-Data files and samples:
-- **Sample STTM**: Example STTM files for testing and development
-- **Responses**: API response data for analysis and comparison
+### V1.1.0 (Optimized)
+- Uses `api1_json_converter_optimized.py`
+- Enhanced validation and smart error recovery
+- Improved performance and quality
+- Better LLM integration
 
-### `/scripts/`
-Utility scripts for various tasks:
-- **Analysis**: Data analysis and performance measurement scripts
-- **Setup**: Environment setup and deployment scripts
+## Usage
 
-### `/devops/`
-DevOps and deployment configuration:
-- **CI/CD**: Pipeline configurations
-- **Environment Configs**: Different environment-specific configurations
+### Running Individual Versions
+```bash
+# V1.1.0 (Current)
+uvicorn sttm_to_notebook_generator_integrated.api3_sttm_to_notebook_generator:app --host 0.0.0.0 --port 8000 --reload
 
-## Key Files
+# V1.0.0 (Using parallel runner)
+python scripts/run_parallel.py
+```
 
-### Root Level
-- **README.md**: Main project documentation and quick start guide
-- **requirements.txt**: Python package dependencies
-- **Dockerfile**: Container configuration for deployment
-- **docker-compose.yml**: Multi-container deployment setup
+### Running Tests
+```bash
+# Extract fresh statistics
+python scripts/analysis/extract_version_stats.py
 
-### Configuration
-- **.gitignore**: Specifies files to exclude from version control
-- **.dockerignore**: Specifies files to exclude from Docker builds
+# View existing statistics
+python scripts/analysis/view_existing_stats.py
 
-## Benefits of This Structure
+# Run automated comparison
+python tests/automated/test_comparison.py
+```
 
-1. **Clear Separation**: Each directory has a specific purpose and responsibility
-2. **Easy Navigation**: Developers can quickly find relevant files
-3. **Scalable**: Structure supports future growth and new features
-4. **Maintainable**: Organized code is easier to maintain and update
-5. **Documentation**: Comprehensive documentation is easily accessible
-6. **Testing**: Dedicated testing structure supports quality assurance
-7. **Deployment**: Clear separation of deployment and configuration files
+### Analysis
+```bash
+# Token usage analysis
+python scripts/analysis/token_analysis.py
 
-## Version Control
+# Generate comparison reports
+python scripts/analysis/extract_version_stats.py
+```
 
-The project uses Git for version control with:
-- **Main branch**: Contains the latest stable code
-- **Version tags**: v1.0.0 and v1.1.0 for specific releases
-- **Organized commits**: Clear commit messages and logical grouping
+## File Organization
+
+### Scripts Organization
+- **Analysis Scripts**: `scripts/analysis/` - Statistics and analysis tools
+- **Setup Scripts**: `scripts/setup/` - Environment setup and deployment
+- **Utility Scripts**: `scripts/` - General utilities like parallel runner
+
+### Test Organization
+- **Automated Tests**: `tests/automated/` - Automated test suites
+- **Manual Tests**: `tests/manual/` - Manual testing procedures
+- **Test Results**: `tests/results/` - Generated test outputs
+
+### Data Organization
+- **Sample Data**: `data/sample_sttm/` - Test STTM files
+- **Response Data**: `data/responses/` - API response samples
+- **Logs**: `logs/` - Application logs (cleaned)
+
+## Cleanup and Maintenance
+
+### Regular Cleanup
+- Python cache files (`__pycache__/`, `*.pyc`) are automatically ignored
+- Log files are cleaned regularly
+- Test results are preserved for analysis
+- Temporary files are excluded from version control
+
+### Git Organization
+- Clean project structure with proper .gitignore
+- Organized commit history
+- Clear separation of concerns
+- Proper documentation maintenance
 
 ---
-
-*Project structure documentation for STTM-to-Notebook Generator*
 *Last updated: July 29, 2025* 
