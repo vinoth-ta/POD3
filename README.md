@@ -150,7 +150,7 @@ The system is configured to use Azure OpenAI with the following settings:
    - Verify Azure OpenAI credentials in `.env`
    - Check API quota and limits
 
-## 📝 Version History
+## Version History
 
 ### v1.1.0 (Current)
 - Optimized STTM processor with enhanced performance
