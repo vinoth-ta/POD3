@@ -117,8 +117,8 @@ Smart parsing   Multi-layer checks  Single attempt  Rich structure   Custom temp
 - **v1.1.0**: Multi-layer validation with smart error recovery and feedback loops
 
 #### 2. **LLM Integration**:
-- **v1.0.0**: Direct Azure OpenAI calls with basic error handling
-- **v1.1.0**: Optimized Azure OpenAI integration with retry logic and token management
+- **v1.0.0**: Direct LLM calls with basic error handling
+- **v1.1.0**: Optimized LLM integration with retry logic and token management
 
 #### 3. **Error Handling**:
 - **v1.0.0**: Basic exception handling with limited recovery
@@ -223,7 +223,7 @@ Smart parsing   Multi-layer checks  Single attempt  Rich structure   Custom temp
 
 ## 10. Cost Analysis
 
-### Azure OpenAI API Costs:
+### LLM API Costs:
 - **v1.0.0**: High token consumption (35,100-58,500 tokens per file)
 - **v1.1.0**: Optimized token consumption (10,000-20,000 tokens per file)
 - **Cost Reduction**: 43-66% reduction in API costs
@@ -266,7 +266,7 @@ The v1.1.0 optimized version demonstrates significant improvements across all te
 - Better configuration management
 
 ### Cost Benefits:
-- Significant reduction in Azure OpenAI API costs
+- Significant reduction in LLM API costs
 - Lower infrastructure requirements
 - Improved resource utilization
 
@@ -276,7 +276,7 @@ The v1.1.0 optimized version demonstrates significant improvements across all te
 - Improved maintainability and extensibility
 - Better security and compliance features
 
-**Recommendation**: Immediate migration to v1.1.0 is strongly recommended for all production environments.
+**Recommendation**: Immediate migration to v1.1.0 is strongly recommended for all environments to do further test and analysis.
 
 ---
 
