@@ -15,7 +15,8 @@ async def get_client_ip(request: Request):
     return ip
 
 # Import the APIRouters from your two API files
-from .api1_json_converter import app1 as json_converter_router
+# from .api1_json_converter import app1 as json_converter_router  # OLD VERSION - COMMENTED OUT
+from .api1_json_converter_optimized import app1 as json_converter_router  # NEW OPTIMIZED VERSION
 from notebook_generator_app.main import app2 as notebook_generator_router
 from notebook_generator_app.schemas.models import PromptRequestModel, PromptResponseModel, MetaInfo # Import necessary models from api2
 from .log_handler import get_logger
@@ -52,7 +53,7 @@ async def full_process_generate_notebook(
 ):
     """
     This endpoint orchestrates the entire process:
-    1. Calls the `build-json-mapping-from-excel-no-baseline` endpoint (from `api1_json_converter`).
+    1. Calls the `build-json-mapping-from-excel-no-baseline` endpoint (from `api1_json_converter_optimized`).
     2. Takes the output of the first step and formats it as input for the `generate-silver-notebook` endpoint (from `api2_notebook_generator(app/main)`).
     3. Calls the `generate-silver-notebook` endpoint.
     4. Returns the final response from the notebook generation step.
@@ -60,13 +61,14 @@ async def full_process_generate_notebook(
     client_ip =await get_client_ip(request)
     logger.info(f"Request received from IP: {client_ip}")
     try:
-        # Step 1: Call the logic of api1_json_converter
-        # We need to directly call the async function from api1_json_converter.py
+        # Step 1: Call the logic of api1_json_converter_optimized
+        # We need to directly call the async function from api1_json_converter_optimized.py
         # and pass the arguments it expects.
         # We import the `orchestrate_json_sttm` function directly.
-        from .api1_json_converter import orchestrate_json_sttm as process_sttm_to_json
+        # from .api1_json_converter import orchestrate_json_sttm as process_sttm_to_json  # OLD VERSION - COMMENTED OUT
+        from .api1_json_converter_optimized import orchestrate_json_sttm as process_sttm_to_json  # NEW OPTIMIZED VERSION
 
-        # Await the execution of the first API's logic
+        # Await the execution of the first API's logic (optimized version)
         json_conversion_output =await process_sttm_to_json(
             sttm_metadata_json=sttm_metadata_json,
             sttm_files=sttm_files,
@@ -76,9 +78,9 @@ async def full_process_generate_notebook(
         logger.debug(json_conversion_output)
         #print(json_conversion_output.keys())
         
-        # Step 2: Prepare the output of api1 as input for api2
+        # Step 2: Prepare the output of api1_optimized as input for api2
         # json_conversion_output is already structured as required by PromptRequestModel
-        # after api1's modification to notebook_metadata_json
+        # after api1_optimized's modification to notebook_metadata_json
         
         # Ensure notebook_metadata_json from the first step is properly typed
         # It's already a dictionary in json_conversion_output, but Pydantic expects MetaInfo model
@@ -90,7 +92,7 @@ async def full_process_generate_notebook(
         # and `content` as a dict of DataInfo, we can directly construct PromptRequestModel
         
         # Parse the notebook_metadata_json from the first step's output to MetaInfo
-        # This handles the unique_ID added by the first API
+        # This handles the unique_ID added by the first API (optimized version)
         processed_notebook_meta = json_conversion_output["notebook_metadata_json"]
         
         # Instantiate the PromptRequestModel using the processed data
@@ -98,7 +100,7 @@ async def full_process_generate_notebook(
         # and `notebook_metadata_json` is a dict that needs to be converted to `MetaInfo`.
         
         # Correctly instantiate MetaInfo from the dictionary
-        # Directly instantiate MetaInfo using the dictionary from the first API's output
+        # Directly instantiate MetaInfo using the dictionary from the first API's output (optimized version)
         meta_info_instance = MetaInfo(**processed_notebook_meta)
         #
         #
