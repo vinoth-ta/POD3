@@ -133,7 +133,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY a.CS_EntityRef ORDER BY CAST(a.ZTIMESTAM
 - **Merge key**: Changed from `"Ref"` to `"ElectricityEmissionUniqueId"`
 - **Partition columns**: Enhanced from `"ReportingPeriod"` to `"ReportingEntityId, PeriodStartDateTime"`
 
-## 📈 Conclusion
+## Conclusion
 
 ### **v1.1.0 Advantages:**
 1. **63% Performance Improvement** - Significantly faster processing
