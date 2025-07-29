@@ -97,23 +97,60 @@ curl -X POST "http://localhost:8000/from-sttm-generate-notebook" \
 
 ## Project Structure
 
+The project follows a well-organized structure for maintainability and scalability:
+
 ```
 POD3/
-├── sttm_to_notebook_generator_integrated/
-│   ├── api1_json_converter_optimized.py  # Optimized STTM to JSON conversion
-│   ├── api1_json_converter.py            # Original STTM to JSON conversion (backup)
-│   ├── api3_sttm_to_notebook_generator.py  # Main orchestrator
-│   └── log_handler.py              # Logging utilities
-├── notebook_generator_app/
-│   ├── main.py                     # API2 - Notebook generation
-│   ├── llm/langchain_workflow.py   # LLM integration
-│   └── utilities/helpers.py        # Helper functions
-├── templates/
-│   ├── silver/                     # Silver layer templates
-│   └── gold/                       # Gold layer templates
-├── requirements.txt                # Python dependencies
-└── README.md                       # This file
+├── README.md                           # Main project documentation
+├── PROJECT_STRUCTURE.md               # Detailed project structure guide
+├── requirements.txt                    # Python dependencies
+├── .gitignore                         # Git ignore rules
+├── Dockerfile                         # Docker container configuration
+├── docker-compose.yml                 # Docker Compose configuration
+│
+├── docs/                              # Documentation directory
+│   ├── architecture/                  # System architecture diagrams
+│   ├── analysis/                      # Technical analysis documents
+│   └── deployment/                    # Deployment documentation
+│
+├── sttm_to_notebook_generator_integrated/  # Main application code
+│   ├── api1_json_converter_optimized.py   # Optimized STTM to JSON conversion
+│   ├── api1_json_converter.py             # Original STTM to JSON conversion (backup)
+│   ├── api3_sttm_to_notebook_generator.py # Main orchestrator
+│   └── log_handler.py                     # Logging utilities
+│
+├── notebook_generator_app/            # Notebook generation application
+│   ├── main.py                         # FastAPI application for notebook generation
+│   ├── llm/                            # LLM integration layer
+│   ├── schemas/                        # Data schemas and models
+│   └── utilities/                      # Utility functions
+│
+├── templates/                          # Jinja2 templates for notebook generation
+│   ├── silver/                         # Silver layer templates
+│   └── gold/                           # Gold layer templates
+│
+├── tests/                              # Testing directory
+│   ├── automated/                      # Automated test scripts
+│   ├── manual/                         # Manual test scripts
+│   └── results/                        # Test results and outputs
+│
+├── data/                               # Data directory
+│   ├── sample_sttm/                    # Sample STTM files for testing
+│   └── responses/                      # API response data
+│
+├── scripts/                            # Utility scripts
+│   ├── analysis/                       # Analysis scripts
+│   └── setup/                          # Setup and deployment scripts
+│
+├── devops/                             # DevOps and CI/CD configuration
+│   └── config/                         # Configuration files
+│
+├── static/                             # Static web assets
+├── logs/                               # Application logs directory
+└── venv/                               # Python virtual environment (gitignored)
 ```
+
+For detailed information about the project structure, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md).
 
 ## Configuration
 

@@ -112,9 +112,13 @@ logs/
 *.temp
 
 # Sample data (optional - remove if you want to include sample files)
-sample STTM/
+data/sample_sttm/
 *.xlsx
 *.xls
+
+# Test results and temporary data
+tests/results/*.json
+data/responses/*.json
 
 # API keys and secrets
 secrets.json
