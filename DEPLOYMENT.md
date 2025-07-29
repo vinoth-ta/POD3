@@ -1,4 +1,4 @@
-# 🚀 Quick Deployment Guide
+# Quick Deployment Guide
 
 ## For New Users (Clone and Run)
 
@@ -53,7 +53,7 @@ uvicorn sttm_to_notebook_generator_integrated.api3_sttm_to_notebook_generator:ap
 ## Version Information
 
 - **Current Version**: v1.0.0
-- **Status**: Production Ready ✅
+- **Status**: Production Ready
 - **Last Tested**: 2025-07-28
 - **Azure OpenAI Model**: gpt-4o
 
@@ -80,6 +80,6 @@ ls templates/silver/
 
 ## Support
 
-- 📖 Full Documentation: See `README.md`
-- 🐛 Issues: Create an issue in the repository
-- 📧 Contact: [your-email@domain.com] 
+- Full Documentation: See `README.md`
+- Issues: Create an issue in the repository
+- Contact: vinoth.premkumar@tigeranalytics.com
