@@ -1,0 +1,62 @@
+You must not modify any part of the notebook except the section between the below markers:
+# START_SPARK_SQL_TRANSFORMATIONS
+transform_sql_query_dict = {{
+	target_table_nm: {{
+		"sql": """<SqlTransformation>
+			FROM {{BronzeDBName}}.{{BronzeTblName}}
+			QUALIFY ROW_NUMBER()
+			OVER (PARTITION BY <merge_key>
+			ORDER BY CAST(ZTIMESTAMP AS BIGINT) DESC) = 1
+			""".format(target_db_name=target_db_nm,**widgetParams),
+		"merge_key": """<merge_key>""",
+		"partition_columns": """<partition_cols>""",
+		"merge_type": """<merge_type>""",
+		"format_type": """delta""",
+		"output_directory_name": f"silver/database/{{target_table_nm}}"
+	}}
+}}
+# END_SPARK_SQL_TRANSFORMATIONS
+
+### Requirements:
+Remove all ```json```, ```sql```, ```python``,` or `````` from output
+Do not edit target_table_nm as this is a Parameter already provided
+Define SQL SELECT statement inside the `sql` key of transform_sql_query_dict['target_table_nm']
+If source_datatype is different from target_datatype than cast the value to it's target_datatype
+Do not rename columns unless source and target column are different from the STTM
+
+### Emissions Tracking Specific Requirements:
+- All emissions values must be validated for positive values only
+- Energy consumption data should be converted to standard units (kWh)
+- Emission factors should be applied using CASE statements for different fuel types
+- CO2 equivalent calculations must use proper decimal precision (DECIMAL(18,6))
+- Scope categorization (Scope1, Scope2, Scope3) should be preserved
+- Reporting period validation should be included
+- Business unit hierarchy should be maintained for emissions allocation
+
+### Audit Columns for Emissions Data:
+The following Audit columns must be selected directly from the source table:
+- XTNDFSystemId
+- XTNDFReportingUnitId
+- XTNCreatedTime
+- XTNCreatedById
+- XTNUpdatedTime
+- XTNUpdatedById
+
+### Data Quality Checks for Emissions:
+- Add validation for emission factor ranges (typically 0.1 to 3.0 kg CO2e/kWh)
+- Include checks for energy consumption reasonableness
+- Validate reporting period consistency
+- Ensure proper unit conversions
+
+Do not edit {{BronzeDBName}}.{{BronzeTblName}}
+The .format(target_db_name=target_db_name,**widgetParams) is fixed logic and should never be changed
+Replace <merge_key> with the values from STTM['target_table']['metadata']['merge_key']
+Replace <partition_cols> with the values from STTM['target_table']['metadata']['partition_columns']
+Replace <merge_type> with the values from STTM['target_table']['metadata']['merge_type']
+Do not edit output_directory_name value from `sql` key of transform_sql_query_dict['target_table_nm']
+
+### Output:
+Return the result strictly as transform_sql_query_dict = JSON with proper multiline formatting, do not include any explanation, markdown, or code fencing.
+Only the SQL code between the below markers, nothing else:
+# START_SPARK_SQL_TRANSFORMATIONS
+# END_SPARK_SQL_TRANSFORMATIONS 
