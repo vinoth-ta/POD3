@@ -1,6 +1,6 @@
-# STTM-to-Notebook Generator
+# STTM-to-Notebook Generator v1.1.0
 
-system that converts Source-to-Target Mapping (STTM) Excel files into complete Databricks ETL notebooks using Azure OpenAI.
+Advanced system that converts Source-to-Target Mapping (STTM) Excel files into complete Databricks ETL notebooks using Azure OpenAI with enhanced performance and optimized processing.
 
 ## Quick Start
 
@@ -79,23 +79,29 @@ curl -X POST "http://localhost:8000/from-sttm-generate-notebook" \
 
 ### Components:
 1. **API1 (JSON Converter)**: Converts STTM Excel → Structured JSON
+   - **Optimized Version**: `api1_json_converter_optimized.py` - Enhanced performance with smart validation
+   - **Original Version**: `api1_json_converter.py` - Backup version
 2. **API2 (Notebook Generator)**: Generates Databricks ETL notebooks
-3. **API3 (Orchestrator)**: Coordinates the entire process
+3. **API3 (Orchestrator)**: Coordinates the entire process using optimized components
 
 ### Key Features:
 - ✅ Azure OpenAI Integration
+- ✅ Enhanced Performance with Optimized Processing
+- ✅ Smart Validation & Error Recovery
 - ✅ Semantic Validation
 - ✅ Error Handling & Logging
 - ✅ Template-based Code Generation
 - ✅ Audit Framework Integration
 - ✅ Data Quality Rules Support
+- ✅ Multi-attempt JSON Generation with Feedback Loop
 
 ## 📁 Project Structure
 
 ```
 POD3/
 ├── sttm_to_notebook_generator_integrated/
-│   ├── api1_json_converter.py      # STTM to JSON conversion
+│   ├── api1_json_converter_optimized.py  # Optimized STTM to JSON conversion
+│   ├── api1_json_converter.py            # Original STTM to JSON conversion (backup)
 │   ├── api3_sttm_to_notebook_generator.py  # Main orchestrator
 │   └── log_handler.py              # Logging utilities
 ├── notebook_generator_app/
@@ -146,7 +152,14 @@ The system is configured to use Azure OpenAI with the following settings:
 
 ## 📝 Version History
 
-### v1.0.0 (Current)
+### v1.1.0 (Current)
+- ✅ Optimized STTM processor with enhanced performance
+- ✅ Smart validation and error recovery mechanisms
+- ✅ Multi-attempt JSON generation with feedback loop
+- ✅ Improved Azure OpenAI integration
+- ✅ Enhanced error handling and logging
+
+### v1.0.0
 - ✅ Complete STTM-to-Notebook pipeline
 - ✅ Azure OpenAI integration
 - ✅ Semantic validation
