@@ -40,21 +40,27 @@ logger = get_logger("<API2 :: CodeGenerator>")
 # Azure OpenAI Configuration
 from openai import AzureOpenAI
 from langchain_openai import AzureChatOpenAI
+from sttm_to_notebook_generator_integrated.read_env_var import (
+    AZURE_OPENAI_ENDPOINT,
+    AZURE_OPENAI_DEPLOYMENT,
+    AZURE_OPENAI_API_VERSION,
+    AZURE_OPENAI_API_KEY
+)
 
 client = AzureOpenAI(
-    api_key="4feeebf652bd46168c6a863b99314fc9",
-    api_version="2024-07-01-preview",
-    azure_endpoint="https://tigeropenaiservice.openai.azure.com/",
+    api_key=AZURE_OPENAI_API_KEY,
+    api_version=AZURE_OPENAI_API_VERSION,
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
 )
 
 # Your deployment name (not model name!)
-deployment_name = "gpt-4o"
+deployment_name = AZURE_OPENAI_DEPLOYMENT
 
 llm_wrapper = AzureChatOpenAI(
     azure_deployment=deployment_name,
-    openai_api_version="2024-07-01-preview",
-    azure_endpoint="https://tigeropenaiservice.openai.azure.com/",
-    openai_api_key="4feeebf652bd46168c6a863b99314fc9",
+    openai_api_version=AZURE_OPENAI_API_VERSION,
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    openai_api_key=AZURE_OPENAI_API_KEY,
     temperature=0.0
 )
 

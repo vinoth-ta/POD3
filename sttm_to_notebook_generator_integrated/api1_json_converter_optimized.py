@@ -61,7 +61,7 @@ def generate_sparksql(json_mapping,query_already_exist='n'):
         # spark_sql_query=get_databricks_endpoint_response(user_prompt=query_prompt,max_tokens=80000,generation_model='databricks-claude-3-7-sonnet')
         
         ## This line is for using pepgenx LLM endpoints
-        # spark_sql_query=get_pepgenx_response(user_prompt=query_prompt,max_tokens=16384,generation_model='gpt-4o',model_provider_name='openai')
+        # spark_sql_query=get_pepgenx_response(user_prompt=query_prompt,max_tokens=4096,generation_model='gpt-4o',model_provider_name='openai')
         # spark_sql_query=get_pepgenx_response(user_prompt=query_prompt,max_tokens=8192,generation_model='claude-3-5-sonnet',model_provider_name='aws-anthropic')    
                      
         
@@ -177,20 +177,26 @@ def get_llm_response(user_prompt):
     try:
         # Use Azure OpenAI directly
         import openai
+        from .read_env_var import (
+            AZURE_OPENAI_ENDPOINT,
+            AZURE_OPENAI_DEPLOYMENT,
+            AZURE_OPENAI_API_VERSION,
+            AZURE_OPENAI_API_KEY
+        )
         
         client = openai.AzureOpenAI(
-            api_key="4feeebf652bd46168c6a863b99314fc9",
-            api_version="2024-07-01-preview",
-            azure_endpoint="https://tigeropenaiservice.openai.azure.com/",
+            api_key=AZURE_OPENAI_API_KEY,
+            api_version=AZURE_OPENAI_API_VERSION,
+            azure_endpoint=AZURE_OPENAI_ENDPOINT,
         )
         
         response = client.chat.completions.create(
-            model="gpt-4o",  # Your deployment name (not model name!)
+            model=AZURE_OPENAI_DEPLOYMENT,  # Your deployment name (not model name!)
             messages=[
                 {"role": "system", "content": "You are an expert data engineer specializing in ETL processes and JSON generation from Excel-based source-to-target mappings."},
                 {"role": "user", "content": user_prompt}
             ],
-            max_tokens=16384,
+            max_tokens=4096,
             temperature=0.1
         )
         
@@ -731,7 +737,7 @@ async def build_json_mapping_from_excel_no_baseline(
         content=get_databricks_endpoint_response(user_prompt=json_prompt,max_tokens=80000,generation_model='databricks-claude-3-7-sonnet')
         
         ## This line is for using pepgenx LLM endpoints
-        # content=get_pepgenx_response(user_prompt=json_prompt,max_tokens=16384,generation_model='gpt-4o',model_provider_name='openai')
+        # content=get_pepgenx_response(user_prompt=json_prompt,max_tokens=4096,generation_model='gpt-4o',model_provider_name='openai')
         # content=get_pepgenx_response(user_prompt=json_prompt,max_tokens=80000,generation_model='claude-3-5-sonnet',model_provider_name='aws-anthropic')
         # print(content)
         
